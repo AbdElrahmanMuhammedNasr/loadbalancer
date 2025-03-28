@@ -34,9 +34,18 @@ func ProcessKeysAndSendRequests() {
 			continue
 		}
 		// Send request for each URL
+		var updatedUrls []dto.ServiceUrlDTO
 		for _, url := range urls {
-			go sendRequest(url) // Use goroutine for concurrent execution
+			//go sendRequest(url) // Use goroutine for concurrent execution
+			updatedUrl, err := sendRequest(url)
+			if err != nil {
+				log.Println("Request failed for URL:", urls, err)
+			}
+			updatedUrls = append(updatedUrls, updatedUrl)
 		}
+		log.Println("save new urls:", urls)
+		jsonData, err := json.Marshal(updatedUrls)
+		db.RedisClient.Set(ctx, key, jsonData, 0)
 	}
 }
 
